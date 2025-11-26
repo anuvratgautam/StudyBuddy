@@ -1,0 +1,218 @@
+Student Helper API - Frontend Documentation
+
+Base URL: http://localhost:8000
+
+This API powers the Student Helper Chatbot. It provides an AI agent capable of breaking down assignments, creating study plans, and answering questions based on uploaded PDF documents.
+
+🔐 Authentication & User Isolation
+
+CRITICAL: This API is stateless but supports multi-user isolation via a custom header.
+You MUST include the X-User-ID header in every request.
+
+Header Name: X-User-ID
+
+Value: A unique string identifying the user (e.g., user_123, a Firebase UID, or a session UUID).
+
+How it works:
+
+If User A sends X-User-ID: User_A, they will strictly interact with their own uploaded documents.
+
+They cannot access or search User B's documents.
+
+📡 Endpoints
+
+1. Chat with Agent
+
+POST /ask
+
+Sends a message to the AI agent. The agent will automatically decide whether to answer directly, use the study planner, or search the user's uploaded documents.
+
+Headers:
+
+Content-Type: application/json
+
+X-User-ID: <user_id>
+
+Body:
+
+{
+  "question": "What is the project about?"
+}
+
+
+Response (200 OK):
+
+{
+  "answer": "The project is about an AI-Powered Idea Builder...",
+  "tool_used": "search_documents" 
+}
+
+
+answer: The markdown-formatted response from the AI.
+
+tool_used: The name of the tool the AI used (search_documents, breakdown_assignment, create_study_plan), or null if it just chatted normally. Tip: You can use this to show a "Searching..." or "Planning..." UI badge.
+
+2. Upload Document
+
+POST /upload
+
+Uploads a PDF to the user's private knowledge base. The file is processed, chunked, and stored in the vector database associated with the X-User-ID.
+
+Headers:
+
+X-User-ID: <user_id>
+
+(Content-Type is automatically set to multipart/form-data by browser/client)
+
+Body (FormData):
+
+file: (Binary PDF file)
+
+Response (200 OK):
+
+{
+  "message": "Successfully added MyNotes.pdf"
+}
+
+
+3. Manage Documents
+
+Get My Documents
+
+GET /documents
+
+Returns a list of files currently stored for this user.
+
+Headers: X-User-ID: <user_id>
+
+Response:
+
+{
+  "user": "user_123",
+  "count": 2,
+  "documents": [
+    "lecture_notes.pdf",
+    "assignment_1.pdf"
+  ]
+}
+
+
+Delete Specific Document
+
+DELETE /documents/{filename}
+
+Removes a specific file from the knowledge base.
+
+Example: DELETE /documents/lecture_notes.pdf
+
+Response:
+
+{
+  "message": "Successfully deleted lecture_notes.pdf (15 chunks removed)."
+}
+
+
+Clear All Documents
+
+DELETE /documents
+
+WARNING: Wipes the entire database for this user.
+
+Response:
+
+{
+  "message": "Cleared 45 chunks for user user_123."
+}
+
+
+💻 JavaScript / React Examples
+
+Helper Function for Requests
+
+Since every request needs the ID, create a helper:
+
+const BASE_URL = "http://localhost:8000";
+// Get this from your Auth provider (Firebase, etc.) or generate a random one for guest mode
+const CURRENT_USER_ID = "user_55_alpha"; 
+
+async function apiRequest(endpoint, method = "GET", body = null, isFileUpload = false) {
+  const headers = {
+    "X-User-ID": CURRENT_USER_ID
+  };
+
+  if (!isFileUpload) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const config = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    config.body = isFileUpload ? body : JSON.stringify(body);
+  }
+
+  const response = await fetch(`${BASE_URL}${endpoint}`, config);
+  return response.json();
+}
+
+
+Example Usage
+
+1. Chatting
+
+async function handleSend(text) {
+  const data = await apiRequest("/ask", "POST", { question: text });
+  
+  console.log("AI Response:", data.answer);
+  
+  if (data.tool_used === "search_documents") {
+    console.log("UI Hint: The AI looked at your files for this!");
+  }
+}
+
+
+2. Uploading
+
+async function handleUpload(fileInput) {
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiRequest("/upload", "POST", formData, true);
+  alert(response.message);
+}
+
+
+⚠️ Common Errors
+
+Status Code
+
+Meaning
+
+Solution
+
+400
+
+Bad Request
+
+You probably uploaded a non-PDF file. Only .pdf is allowed.
+
+404
+
+Not Found
+
+You tried to delete a file that doesn't exist in your database.
+
+422
+
+Validation Error
+
+You forgot to send the question field in the JSON body.
+
+500
+
+Server Error
+
+Check the backend Docker logs. The API key might be invalid or the file might be corrupted.

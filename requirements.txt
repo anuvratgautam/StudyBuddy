@@ -1,0 +1,35 @@
+# Core LangChain
+
+langchain
+langchain-core
+langchain-google-genai
+langchain-community
+langgraph
+  
+# API Framework
+
+fastapi
+uvicorn
+
+#Embeddings
+
+sentence-transformers # For all-MiniLM-L6-v2 embeddings
+python-multipart
+langchain-huggingface
+langchain-chroma
+
+# Configuration
+
+python-dotenv
+
+# Data Models
+
+pydantic
+
+# Vector DB (only if doing RAG/Feature 1)
+
+chromadb 
+
+#PDF Operations
+
+PyMuPDF

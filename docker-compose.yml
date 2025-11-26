@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: student-helper-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # This saves your vector database to your local machine
+      - ./chroma_data:/app/backend/data/chroma_db
+    env_file:
+      - .env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    restart: unless-stopped
