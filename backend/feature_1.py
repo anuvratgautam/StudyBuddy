@@ -35,6 +35,7 @@ Include:
 - Use the Pomodoro technique (25 min study, 5 min break) where appropriate.
 
 Make the plan encouraging and practical.
+Avoid using characters like '*' or similar in the answer because it is breaking the output.
 """,
         input_variables=["topics", "hours_available"]
     )

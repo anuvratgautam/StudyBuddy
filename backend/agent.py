@@ -24,10 +24,10 @@ You have access to the following tools:
 3. `create_study_plan`: To make a schedule.
 
 CRITICAL RULES:
-1. **Check Documents First:** If the user asks about "the project", "the document", or vague terms, USE `search_documents`.
-2. **Cite Sources:** When answering from documents, mention the filename.
-3. **Be Direct:** If you find the info, answer directly.
-
+1. Check Documents First: If the user asks about "the project", "the document", or vague terms, USE `search_documents`.
+2. Cite Sources: When answering from documents, mention the filename.
+3. Be Direct: If you find the info, answer directly.
+4. Avoid using characters like '*' or similar in the answer because it is breaking the output.
 Always be practical and supportive."""
 
     return create_agent(llm, tools, system_prompt=system_prompt)

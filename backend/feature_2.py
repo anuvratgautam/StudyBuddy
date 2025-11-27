@@ -34,6 +34,7 @@ Provide:
 3. A suggested day to complete each task, spreading the work evenly up to the deadline.
 
 Be specific and practical.
+Avoid using characters like '*' or similar in the answer because it is breaking the output.
 """,
         input_variables=["assignment_text", "deadline_days"]
     )

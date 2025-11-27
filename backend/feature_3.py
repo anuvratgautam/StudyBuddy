@@ -46,6 +46,8 @@ Instructions:
 - Base your answer strictly on the text provided.
 - Cite the filename and page number using double braces like {{filename}} and {{page}}.
 - If the answer is not in the context, say so.
+
+Avoid using characters like '*' or similar in the answer because it is breaking the output.
 """,
         input_variables=["context", "query"]
     )
