@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studybuddy-frontend
+  namespace: studybuddy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: studybuddy-frontend
+  template:
+    metadata:
+      labels:
+        app: studybuddy-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: <DOCKER_REGISTRY>/studybuddy-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        env:
+        - name: VITE_API_BASE_URL
+          value: "http://studybuddy-backend.studybuddy.svc.cluster.local:8000"

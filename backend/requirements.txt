@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+python-multipart
+sqlmodel
+sqlalchemy
+pydantic
+chromadb
+duckdb
+requests
+openai
+pypdf
+pdfminer.six
+python-jose
+python-dotenv
+httpx
+langchain

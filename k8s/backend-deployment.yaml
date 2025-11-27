@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studybuddy-backend
+  namespace: studybuddy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: studybuddy-backend
+  template:
+    metadata:
+      labels:
+        app: studybuddy-backend
+    spec:
+      containers:
+      - name: backend
+        image: <DOCKER_REGISTRY>/studybuddy-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: studybuddy-config
+        - secretRef:
+            name: studybuddy-secret
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

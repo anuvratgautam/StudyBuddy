@@ -1,16 +1,79 @@
+# docker-compose.yml
 services:
+
   backend:
-    build: 
-      context: .
+    build:
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: student-helper-backend
+    image: studybuddy-backend:latest
+    container_name: studybuddy-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
     ports:
       - "8000:8000"
-    volumes:
-      # This saves your vector database to your local machine
-      - ./chroma_data:/app/backend/data/chroma_db
-    env_file:
-      - .env
-    environment:
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    # NOTE: no bind-mount here so the image-installed Python deps remain available
+    # volumes:
+    #   - ./backend:/app/backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: studybuddy-frontend:latest
+    container_name: studybuddy-frontend
     restart: unless-stopped
+    ports:
+      - "3000:80"                # visit http://localhost:3000
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_AUTH_BASE_URL=http://localhost:9000
+    # If you prefer live dev (vite dev server), remove build+nginx and run npm dev on host.
+    # volumes:
+    #   - ./frontend:/app
+
+  auth-server:
+    build:
+      context: ./auth-server
+      dockerfile: Dockerfile
+    image: studybuddy-auth-server:latest
+    container_name: studybuddy-auth
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - PORT=9000
+      - NODE_ENV=development
+    # NOTE: do NOT mount the entire auth-server folder to /app during startup,
+    # because that will hide node_modules installed in the image and cause
+    # "Cannot find module 'express'" errors. If you want to edit code live,
+    # either run `npm install` in your host auth-server or use an explicit
+    # named volume for node_modules.
+    # volumes:
+    #   - ./auth-server:/app
+
+# Optional: Selenium + test-runner (commented out to keep initial bring-up simple).
+# Uncomment when you want to enable Selenium testing.
+#
+#  selenium:
+#    image: selenium/standalone-chrome:latest
+#    container_name: selenium-chrome
+#    shm_size: 2g
+#    ports:
+#      - "4444:4444"
+#      - "7900:7900"
+#
+#  test-runner:
+#    image: python:3.11-slim
+#    container_name: studybuddy-test-runner
+#    depends_on:
+#      - selenium
+#      - frontend
+#      - backend
+#    working_dir: /tests
+#    volumes:
+#      - ./tests:/tests:ro
+#    environment:
+#      - SELENIUM_URL=http://selenium:4444/wd/hub
+#      - FRONTEND_URL=http://frontend:80
+#    entrypoint: ["sh", "-c", "pip install selenium==4.11.2 requests && python -u /tests/e2e_test.py"]
